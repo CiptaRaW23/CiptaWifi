@@ -68,6 +68,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.navigation.compose)
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.accompanist.placeholder)
+    implementation(libs.lottie.compose)
 
 
 }
