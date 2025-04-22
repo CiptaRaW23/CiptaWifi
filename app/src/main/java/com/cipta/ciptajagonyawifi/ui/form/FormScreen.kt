@@ -30,10 +30,16 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.cipta.ciptajagonyawifi.R
+import com.cipta.ciptajagonyawifi.api.FormData
+import com.cipta.ciptajagonyawifi.api.RetrofitInstance
 import com.cipta.ciptajagonyawifi.data.dummyPackages
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.*
 
 @Composable
@@ -130,15 +136,29 @@ fun FormScreen(packageId: Int) {
                 Button(
                     onClick = {
                         isLoading = true
-                        scope.launch {
-                            delay(1500)
-                            isLoading = false
-                            Toast.makeText(context, "Pendaftaran berhasil!", Toast.LENGTH_SHORT).show()
-                            name = ""
-                            address = ""
-                            phone = ""
-                        }
-                    },
+                        val data = FormData(name, address, phone, pkg.name)
+
+                        RetrofitInstance.api.submitForm(data).enqueue(object :
+                            Callback<ResponseBody> {
+                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                                isLoading = false
+                                if (response.isSuccessful) {
+                                    Toast.makeText(context, "Pendaftaran berhasil!", Toast.LENGTH_SHORT).show()
+                                    name = ""
+                                    address = ""
+                                    phone = ""
+                                } else {
+                                    Toast.makeText(context, "Gagal: ${response.code()}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+
+                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                isLoading = false
+                                Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        })
+                    }
+                    ,
                     enabled = isFormValid,
                     modifier = Modifier
                         .fillMaxWidth()
