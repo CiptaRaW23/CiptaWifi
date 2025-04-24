@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "665968924241",
+    "project_id": "ciptaproject-9a3df",
+    "storage_bucket": "ciptaproject-9a3df.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:665968924241:android:369ef45fcc611e02444a70",
+        "android_client_info": {
+          "package_name": "com.cipta.ciptajagonyawifi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8q3Ym_A68nt5imm1dWxy6Wb43KiLm_dI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -9,10 +9,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.cipta.ciptajagonyawifi" />
+                  <option name="mobileSdkAppId" value="1:665968924241:android:369ef45fcc611e02444a70" />
+                  <option name="projectId" value="ciptaproject-9a3df" />
+                  <option name="projectNumber" value="665968924241" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
