@@ -1,8 +1,11 @@
 package com.cipta.ciptajagonyawifi.model
 
+import com.google.firebase.Timestamp
+
 data class Article(
-    val id: Int,
-    val title: String,
-    val content: String,
-    val imageResId: Int
+    val id: String = "",
+    val title: String = "",
+    val content: String = "",
+    val imageUrl: String = "",
+    val timestamp: Timestamp = Timestamp.now()
 )

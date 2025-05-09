@@ -3,7 +3,10 @@ package com.cipta.ciptajagonyawifi.ui.home
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -25,6 +28,7 @@ import com.cipta.ciptajagonyawifi.data.dummyPackages
 import com.cipta.ciptajagonyawifi.R
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
+import com.cipta.ciptajagonyawifi.model.WifiPackage
 import com.cipta.ciptajagonyawifi.ui.font.Poopins
 
 @Composable
@@ -42,13 +46,25 @@ fun WifiScreen(navController: NavController) {
         )
 
         // Konten di atas background
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color.Transparent)
                 .padding(16.dp)
         ) {
-            items(dummyPackages) { pkg ->
-                GlowingPackageCard(pkg = pkg, navController = navController)
+            Text(
+                text = "Paket WiFi",
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                color = Color(0xFFF1F8E9),
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(dummyPackages) { pkg ->
+                    GlowingPackageCard(pkg = pkg, navController = navController)
+                }
             }
         }
     }
@@ -56,31 +72,27 @@ fun WifiScreen(navController: NavController) {
 
 
 @Composable
-fun GlowingPackageCard(pkg: com.cipta.ciptajagonyawifi.model.WifiPackage, navController: NavController) {
+fun GlowingPackageCard(pkg: WifiPackage, navController: NavController) {
     var isPressed by remember { mutableStateOf(false) }
 
-    val backgroundColor by animateColorAsState(
-        targetValue = if (isPressed) Color(0xFF26A69A) else Color(0xFF2E7D32),
-        label = "Card Color Animation"
-    )
+    // Menggunakan clickable dengan interactionSource
+    val interactionSource = remember { MutableInteractionSource() }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 16.dp)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = {
-                        isPressed = true
-                        tryAwaitRelease()
-                        isPressed = false
-                        navController.navigate("detail/${pkg.id}")
-                    }
-                )
-            },
+            .clickable(
+                indication = null,  // Menghilangkan efek ripple default
+                interactionSource = interactionSource,
+                onClick = {
+                    isPressed = true
+                    navController.navigate("detail/${pkg.id}")
+                }
+            ),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor)
+        colors = CardDefaults.cardColors(containerColor = if (isPressed) Color(0xFF26A69A) else Color(0xFF2E7D32))
     ) {
         Box(
             modifier = Modifier
@@ -88,7 +100,7 @@ fun GlowingPackageCard(pkg: com.cipta.ciptajagonyawifi.model.WifiPackage, navCon
                 .background(
                     Brush.linearGradient(
                         colors = listOf(
-                            if (isPressed) Color(0xFF81C784) else Color(0xFF1B5E20), // Gradasi berubah saat ditekan
+                            if (isPressed) Color(0xFF81C784) else Color(0xFF1B5E20),
                             Color(0xFF81C784)
                         ),
                         start = Offset.Zero,
@@ -97,7 +109,7 @@ fun GlowingPackageCard(pkg: com.cipta.ciptajagonyawifi.model.WifiPackage, navCon
                 )
                 .padding(16.dp)
         ) {
-            // Icon WiFi di kanan
+            // Gambar Icon WiFi di kanan
             Image(
                 painter = painterResource(id = R.drawable.ic_wifi2),
                 contentDescription = "icon",
@@ -106,16 +118,15 @@ fun GlowingPackageCard(pkg: com.cipta.ciptajagonyawifi.model.WifiPackage, navCon
                     .align(Alignment.CenterEnd)
             )
 
-            // Konten teks di kiri
+            // Kolom teks di kiri
             Column(
                 modifier = Modifier
                     .align(Alignment.CenterStart)
             ) {
                 Text(
                     text = pkg.name,
-                    fontFamily = Poopins,
-                    fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
                 Text(
@@ -133,6 +144,8 @@ fun GlowingPackageCard(pkg: com.cipta.ciptajagonyawifi.model.WifiPackage, navCon
         }
     }
 }
+
+
 
 @Preview(showBackground = true)
 @Composable

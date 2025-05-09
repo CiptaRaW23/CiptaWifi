@@ -1,7 +1,5 @@
 package com.cipta.ciptajagonyawifi.data
 
-import com.cipta.ciptajagonyawifi.R
-import com.cipta.ciptajagonyawifi.model.Article
 import com.cipta.ciptajagonyawifi.model.WifiPackage
 
 val dummyPackages = listOf(
@@ -148,20 +146,5 @@ val dummyPackages = listOf(
             🏢 Promo Khusus Bisnis: Diskon 30% untuk pelanggan baru!  
             💼 Dapatkan koneksi cepat dan stabil untuk mendukung produktivitas bisnis Anda!
         """.trimIndent()
-    )
-)
-
-val sampleArticles = listOf(
-    Article(
-        id = 1,
-        title = "Tips Memilih Paket WiFi",
-        content = "Berikut adalah tips memilih paket WiFi terbaik untuk kebutuhan rumahmu...",
-        imageResId = R.drawable.background
-    ),
-    Article(
-        id = 2,
-        title = "Keamanan CCTV",
-        content = "CCTV sangat penting untuk keamanan rumah. Berikut adalah beberapa tips...",
-        imageResId = R.drawable.background
     )
 )

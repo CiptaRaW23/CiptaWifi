@@ -30,12 +30,10 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.cipta.ciptajagonyawifi.R
-import com.cipta.ciptajagonyawifi.api.FormData
+import com.cipta.ciptajagonyawifi.model.FormData
 import com.cipta.ciptajagonyawifi.api.RetrofitInstance
 import com.cipta.ciptajagonyawifi.data.dummyPackages
 import com.google.android.gms.location.LocationServices
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback

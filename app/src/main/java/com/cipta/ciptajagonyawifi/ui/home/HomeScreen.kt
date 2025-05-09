@@ -4,7 +4,6 @@ package com.cipta.ciptajagonyawifi.ui.home
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,31 +17,43 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cipta.ciptajagonyawifi.R
-import com.cipta.ciptajagonyawifi.data.sampleArticles
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.delay
+import com.cipta.ciptajagonyawifi.model.Article
+import com.cipta.ciptajagonyawifi.model.Promo
 
 @Composable
-fun HomeScreen(navController: NavController) {
-    val promoImages = listOf(
-        R.drawable.background,
-        R.drawable.background
-    )
+fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewModel()) {
+    val articles by viewModel.articles.collectAsState()
+    val promos by viewModel.promos.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
-        Text(
-            text = "Beranda",
-            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(16.dp),
-            color = Color(0xFF1B5E20)
-        )
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Beranda",
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                color = Color(0xFF1B5E20)
+            )
 
-        PromoSlider(images = promoImages)
+            TextButton(onClick = { navController.navigate("login") }) {
+                Text(
+                    text = "Login Admin",
+                    color = Color(0xFF2E7D32),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+
+        PromoSlider(promos = promos)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -56,34 +67,37 @@ fun HomeScreen(navController: NavController) {
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        NewsSection(navController = navController)
-
+        NewsSection(navController = navController, article = articles)
     }
 }
 
+
+
 @Composable
-fun PromoSlider(images: List<Int>) {
+fun PromoSlider(promos: List<Promo>) {
+    if (promos.isEmpty()) return
+
     val pagerState = rememberPagerState(initialPage = 0)
 
     LaunchedEffect(pagerState) {
         while (true) {
-            delay(3000L) // Ganti slide setiap 3 detik
-            val nextPage = (pagerState.currentPage + 1) % images.size
+            delay(3000L)
+            val nextPage = (pagerState.currentPage + 1) % promos.size
             pagerState.animateScrollToPage(nextPage)
         }
     }
 
     Column {
         HorizontalPager(
-            count = images.size,
+            count = promos.size,
             state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp)
         ) { page ->
-            Image(
-                painter = painterResource(id = images[page]),
-                contentDescription = "Promo $page",
+            AsyncImage(
+                model = promos[page].imageUrl,
+                contentDescription = "Promo ${promos[page].id}",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
@@ -101,6 +115,7 @@ fun PromoSlider(images: List<Int>) {
         )
     }
 }
+
 
 @Composable
 fun MenuGrid(navController: NavController) {
@@ -156,9 +171,9 @@ fun MenuItem(title: String, icon: Int, onClick: () -> Unit) {
 }
 
 @Composable
-fun NewsSection(navController: NavController) {
+fun NewsSection(navController: NavController, article: List<Article>) {
     Column(modifier = Modifier.padding(16.dp)) {
-        sampleArticles.forEach { article ->
+        article.forEach { article ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -170,8 +185,8 @@ fun NewsSection(navController: NavController) {
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9))
             ) {
                 Row {
-                    Image(
-                        painter = painterResource(id = article.imageResId),
+                    AsyncImage(
+                        model = article.imageUrl,
                         contentDescription = null,
                         modifier = Modifier
                             .size(64.dp)
@@ -193,3 +208,12 @@ fun NewsSection(navController: NavController) {
     }
 }
 
+
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    val navController = rememberNavController()
+    MaterialTheme {
+        HomeScreen(navController = navController)
+    }
+}
