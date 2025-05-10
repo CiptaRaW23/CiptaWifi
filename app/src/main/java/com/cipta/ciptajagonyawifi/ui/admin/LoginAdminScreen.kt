@@ -1,29 +1,28 @@
 package com.cipta.ciptajagonyawifi.ui.admin
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.cipta.ciptajagonyawifi.R
 
 @Composable
 fun LoginAdminScreen(
@@ -45,38 +44,86 @@ fun LoginAdminScreen(
         }
     }
 
-    Column(
+    Box(
         modifier = Modifier
-            .padding(16.dp)
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.Center
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    listOf(Color(0xFF006400), Color(0xFF90EE90))
+                )
+            )
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Text("Login Admin", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-
-        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") })
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation()
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        Button(
-            onClick = { viewModel.login(email, password) },
-            enabled = !isLoading
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White, shape = RoundedCornerShape(24.dp))
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Login")
-        }
+            Image(
+                painter = painterResource(id = R.drawable.ic_wifi),
+                contentDescription = "Logo Admin",
+                modifier = Modifier.size(80.dp)
+            )
 
-        errorMessage?.let {
-            Spacer(Modifier.height(8.dp))
-            Text(it, color = Color.Red, fontSize = 14.sp)
-        }
+            Spacer(modifier = Modifier.height(16.dp))
 
-        if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.padding(top = 12.dp))
+            IconTextField(value = email, onValueChange = { email = it }, label = "Email", icon = Icons.Default.Email)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            IconTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = "Password",
+                icon = Icons.Default.Lock,
+                visualTransformation = PasswordVisualTransformation()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (isLoading) {
+                CircularProgressIndicator()
+            } else {
+                Button(
+                    onClick = { viewModel.login(email, password) },
+                    enabled = email.isNotBlank() && password.isNotBlank(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A4A4A)),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = ButtonDefaults.elevatedButtonElevation(8.dp)
+                ) {
+                    Text("Login", color = Color.White)
+                }
+            }
+
+            errorMessage?.let {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(it, color = Color.Red, fontSize = 14.sp)
+            }
         }
     }
+}
+
+@Composable
+fun IconTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    icon: ImageVector,
+    visualTransformation: VisualTransformation = VisualTransformation.None
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        leadingIcon = { Icon(imageVector = icon, contentDescription = label) },
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        singleLine = true,
+        visualTransformation = visualTransformation
+    )
 }

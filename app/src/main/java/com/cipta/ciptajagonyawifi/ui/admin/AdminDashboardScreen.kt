@@ -1,14 +1,11 @@
 package com.cipta.ciptajagonyawifi.ui.admin
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -21,44 +18,61 @@ import com.google.firebase.auth.FirebaseAuth
 fun AdminDashboardScreen(
     navController: NavController
 ) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Top
+            .background(Color(0xFFF0F0F0))
+            .padding(16.dp)
     ) {
-        Text(
-            text = "Admin Dashboard",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
-
-        Button(
-            onClick = { navController.navigate("promo_dashboard") },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+        Column(
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier.fillMaxSize()
         ) {
-            Text("Kelola Promo")
-        }
+            Text(
+                text = "Dashboard",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
 
-        Button(
-            onClick = { navController.navigate("article_management") },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-        ) {
-            Text("Kelola Artikel")
-        }
+            DashboardButton("Kelola Promo") {
+                navController.navigate("promo_dashboard")
+            }
 
-        Button(
-            onClick = {
+            DashboardButton("Kelola Artikel") {
+                navController.navigate("article_dashboard")
+            }
+
+            DashboardButton("Logout", isDanger = true) {
                 FirebaseAuth.getInstance().signOut()
                 navController.navigate("login") {
                     popUpTo("admin_dashboard") { inclusive = true }
                 }
-            },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-        ) {
-            Text("Logout", color = Color.White)
+            }
         }
+    }
+}
+
+@Composable
+fun DashboardButton(
+    text: String,
+    isDanger: Boolean = false,
+    onClick: () -> Unit
+) {
+    val backgroundColor = if (isDanger) Color.Red else Color(0xFF1976D2) // biru
+    val textColor = if (isDanger) Color.White else Color.White
+
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
+        shape = RoundedCornerShape(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .height(50.dp)
+    ) {
+        Text(text = text, color = textColor)
     }
 }

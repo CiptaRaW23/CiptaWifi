@@ -30,7 +30,11 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
     val articles by viewModel.articles.collectAsState()
     val promos by viewModel.promos.collectAsState()
 
-    Column {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF5F5F5)) // Latar belakang mint muda
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -44,11 +48,12 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
                 color = Color(0xFF1B5E20)
             )
 
-            TextButton(onClick = { navController.navigate("login") }) {
-                Text(
-                    text = "Login Admin",
-                    color = Color(0xFF2E7D32),
-                    style = MaterialTheme.typography.labelLarge
+            IconButton(onClick = { navController.navigate("login") }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_user),
+                    contentDescription = "Login Admin",
+                    tint = Color(0xFF2E7D32),
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }
@@ -70,8 +75,6 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
         NewsSection(navController = navController, article = articles)
     }
 }
-
-
 
 @Composable
 fun PromoSlider(promos: List<Promo>) {
@@ -103,6 +106,7 @@ fun PromoSlider(promos: List<Promo>) {
                     .padding(horizontal = 16.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .fillMaxSize()
+                    .aspectRatio(16f / 9f)
             )
         }
 
@@ -115,7 +119,6 @@ fun PromoSlider(promos: List<Promo>) {
         )
     }
 }
-
 
 @Composable
 fun MenuGrid(navController: NavController) {
@@ -172,7 +175,13 @@ fun MenuItem(title: String, icon: Int, onClick: () -> Unit) {
 
 @Composable
 fun NewsSection(navController: NavController, article: List<Article>) {
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth()
+            .heightIn(min = 100.dp, max = 300.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
         article.forEach { article ->
             Card(
                 modifier = Modifier
@@ -182,7 +191,7 @@ fun NewsSection(navController: NavController, article: List<Article>) {
                         navController.navigate("article/${article.id}")
                     },
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9))
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)) // Card hijau lembut
             ) {
                 Row {
                     AsyncImage(
@@ -200,14 +209,13 @@ fun NewsSection(navController: NavController, article: List<Article>) {
                             .padding(16.dp)
                             .weight(1f),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color(0xFF33691E)
+                        color = Color(0xFF33691E) // Judul artikel
                     )
                 }
             }
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
