@@ -15,10 +15,10 @@ import com.cipta.ciptajagonyawifi.ui.article.ArticleDashboardScreen
 import com.cipta.ciptajagonyawifi.ui.article.ArticleDetailScreen
 import com.cipta.ciptajagonyawifi.ui.article.ArticleManagementScreen
 import com.cipta.ciptajagonyawifi.ui.article.ArticleViewModel
-import com.cipta.ciptajagonyawifi.ui.detail.DetailScreen
-import com.cipta.ciptajagonyawifi.ui.form.FormScreen
+import com.cipta.ciptajagonyawifi.ui.wifi.DetailScreen
+import com.cipta.ciptajagonyawifi.ui.wifi.FormScreen
 import com.cipta.ciptajagonyawifi.ui.home.HomeScreen
-import com.cipta.ciptajagonyawifi.ui.home.WifiScreen
+import com.cipta.ciptajagonyawifi.ui.wifi.WifiScreen
 import com.cipta.ciptajagonyawifi.ui.promo.PromoManagementScreen
 import com.cipta.ciptajagonyawifi.ui.splash.SplashScreen
 
@@ -38,13 +38,14 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
 
         composable("detail/{id}") { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: 0
-            DetailScreen(id, navController)
+            DetailScreen(packageId = id, navController = navController)
         }
 
         composable("form/{id}") { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: 0
-            FormScreen(packageId = id)
+            FormScreen(packageId = id, navController = navController)
         }
+
 
         composable("article/{articleId}") { backStackEntry ->
             val articleId = backStackEntry.arguments?.getString("articleId")

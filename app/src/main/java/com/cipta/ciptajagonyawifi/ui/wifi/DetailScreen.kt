@@ -1,4 +1,4 @@
-package com.cipta.ciptajagonyawifi.ui.detail
+package com.cipta.ciptajagonyawifi.ui.wifi
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,17 +33,35 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.cipta.ciptajagonyawifi.R
-import com.cipta.ciptajagonyawifi.data.dummyPackages
 import com.cipta.ciptajagonyawifi.model.WifiPackage
 import com.google.accompanist.pager.*
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun DetailScreen(packageId: Int, navController: NavController) {
-    val pkg = dummyPackages.find { it.id == packageId } ?: return
-    // Filter current package and get 3 random recommendations
+fun DetailScreen(
+    packageId: Int, // ganti ke String supaya sesuai dengan Firestore doc id
+    navController: NavController,
+    viewModel: WifiViewModel = androidx.lifecycle.viewmodel.compose.viewModel() // pakai ViewModel yang sudah fetch data
+) {
+    val wifiPackages by viewModel.wifiPackages.collectAsState()
+
+    // Cari paket berdasarkan packageId dari Firestore
+    val pkg = wifiPackages.find { it.id == packageId }
+
+    // Kalau data belum ada, bisa tampilkan loading atau langsung return
+    if (pkg == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    // Paket ditemukan, UI sama persis seperti kamu punya
     val recommendations = remember(packageId) {
-        dummyPackages.filter { it.id != packageId }.shuffled().take(3)
+        wifiPackages.filter { it.id != packageId }.shuffled().take(3)
     }
 
     val images = listOf(
@@ -67,7 +85,6 @@ fun DetailScreen(packageId: Int, navController: NavController) {
                 .padding(bottom = 72.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Image slider
             Box(modifier = Modifier
                 .fillMaxWidth()
                 .height(250.dp)) {
@@ -159,7 +176,6 @@ fun DetailScreen(packageId: Int, navController: NavController) {
                     fontSize = 16.sp
                 )
 
-                // Recommendation Section
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = "Recommended Packages",
@@ -184,7 +200,6 @@ fun DetailScreen(packageId: Int, navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // Fixed bottom button
         Button(
             onClick = { navController.navigate("form/${pkg.id}") },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
@@ -197,7 +212,6 @@ fun DetailScreen(packageId: Int, navController: NavController) {
             Text("Order Now", color = Color.White, fontSize = 16.sp)
         }
 
-        // Zoom Overlay
         if (isZoomed) {
             Box(
                 modifier = Modifier
@@ -242,6 +256,7 @@ fun DetailScreen(packageId: Int, navController: NavController) {
         }
     }
 }
+
 
 @Composable
 fun RecommendationCard(recommendedPkg: WifiPackage, onClick: () -> Unit) {

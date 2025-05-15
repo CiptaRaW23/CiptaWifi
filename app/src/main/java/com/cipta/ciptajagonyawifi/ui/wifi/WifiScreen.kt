@@ -1,12 +1,9 @@
-package com.cipta.ciptajagonyawifi.ui.home
+package com.cipta.ciptajagonyawifi.ui.wifi
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,35 +14,35 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.cipta.ciptajagonyawifi.data.dummyPackages
 import com.cipta.ciptajagonyawifi.R
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.cipta.ciptajagonyawifi.model.WifiPackage
-import com.cipta.ciptajagonyawifi.ui.font.Poopins
 
 @Composable
-fun WifiScreen(navController: NavController) {
+fun WifiScreen(navController: NavController, viewModel: WifiViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+    val wifiPackages by viewModel.wifiPackages.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadWifiPackages()
+    }
+
     Box(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Background image
         Image(
-            painter = painterResource(id = R.drawable.background), // ganti sesuai nama file background-mu
+            painter = painterResource(id = R.drawable.background),
             contentDescription = "Background",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
 
-        // Konten di atas background
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -62,13 +59,14 @@ fun WifiScreen(navController: NavController) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(dummyPackages) { pkg ->
+                items(wifiPackages) { pkg ->
                     GlowingPackageCard(pkg = pkg, navController = navController)
                 }
             }
         }
     }
 }
+
 
 
 @Composable

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.cipta.ciptajagonyawifi.model.Article
 import com.cipta.ciptajagonyawifi.model.Promo
+import com.cipta.ciptajagonyawifi.model.WifiPackage
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.MutableStateFlow
