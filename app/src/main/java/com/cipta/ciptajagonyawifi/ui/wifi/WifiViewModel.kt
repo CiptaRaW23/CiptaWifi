@@ -5,8 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cipta.ciptajagonyawifi.model.WifiPackage
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -15,38 +14,63 @@ import kotlinx.coroutines.tasks.await
 class WifiViewModel : ViewModel() {
 
     private val firestore = FirebaseFirestore.getInstance()
-    private val collection = firestore.collection("wifiPackages")
+    private val wifiCollection = firestore.collection("wifiPackages")
 
     private val _wifiPackages = MutableStateFlow<List<WifiPackage>>(emptyList())
-    val wifiPackages: StateFlow<List<WifiPackage>> = _wifiPackages
+    val wifiPackages: StateFlow<List<WifiPackage>> get() = _wifiPackages
 
     init {
         fetchWifiPackages()
     }
 
-    fun loadWifiPackages() {
+
+
+    private fun fetchWifiPackages() {
+        wifiCollection
+            .orderBy("id", Query.Direction.ASCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("WifiViewModel", "Listen failed.", error)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null && !snapshot.isEmpty) {
+                    val list = snapshot.documents.mapNotNull { doc ->
+                        doc.toObject(WifiPackage::class.java)
+                    }
+                    _wifiPackages.value = list
+                } else {
+                    _wifiPackages.value = emptyList()
+                }
+            }
+    }
+
+    fun addWifiPackage(wifiPackage: WifiPackage) {
         viewModelScope.launch {
             try {
-                val snapshot = collection.get().await()
-                val list = snapshot.documents.mapNotNull { it.toObject(WifiPackage::class.java) }
-                _wifiPackages.value = list
+                wifiCollection.add(wifiPackage).await()
             } catch (e: Exception) {
-                _wifiPackages.value = emptyList()  // fallback kalau error
+                Log.e("WifiViewModel", "Error adding wifi package", e)
             }
         }
     }
 
-    private fun fetchWifiPackages() {
-        Firebase.firestore.collection("wifiPackages")
-            .get()
-            .addOnSuccessListener { result ->
-                val list = result.documents.mapNotNull {
-                    it.toObject(WifiPackage::class.java)
-                }.sortedBy { it.id } // sort berdasarkan ID
-                _wifiPackages.value = list
+    fun updateWifiPackage(docId: String, wifiPackage: WifiPackage) {
+        viewModelScope.launch {
+            try {
+                wifiCollection.document(docId).set(wifiPackage).await()
+            } catch (e: Exception) {
+                Log.e("WifiViewModel", "Error updating wifi package", e)
             }
-            .addOnFailureListener { e ->
-                Log.e("HomeViewModel", "Error fetching wifi packages", e)
+        }
+    }
+
+    suspend fun deleteWifiPackage(docId: String) {
+        viewModelScope.launch {
+            try {
+                wifiCollection.document(docId).delete().await()
+            } catch (e: Exception) {
+                Log.e("WifiViewModel", "Error deleting wifi package", e)
             }
+        }
     }
 }

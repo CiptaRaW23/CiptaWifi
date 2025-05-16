@@ -6,5 +6,7 @@ data class WifiPackage(
     val speed: String = "",
     val price: String = "",
     val description: String = "",
-    val promo: String = ""
+    val promo: String = "",
+    val docId: String = ""
 )
+

@@ -10,7 +10,8 @@ import androidx.navigation.compose.composable
 import com.cipta.ciptajagonyawifi.ui.promo.PromoDashboardScreen
 import com.cipta.ciptajagonyawifi.ui.promo.PromoViewModel
 import com.cipta.ciptajagonyawifi.ui.admin.AdminDashboardScreen
-import com.cipta.ciptajagonyawifi.ui.admin.LoginAdminScreen
+import com.cipta.ciptajagonyawifi.ui.admin.LoginScreen
+import com.cipta.ciptajagonyawifi.ui.admin.UserHomeScreen
 import com.cipta.ciptajagonyawifi.ui.article.ArticleDashboardScreen
 import com.cipta.ciptajagonyawifi.ui.article.ArticleDetailScreen
 import com.cipta.ciptajagonyawifi.ui.article.ArticleManagementScreen
@@ -21,6 +22,9 @@ import com.cipta.ciptajagonyawifi.ui.home.HomeScreen
 import com.cipta.ciptajagonyawifi.ui.wifi.WifiScreen
 import com.cipta.ciptajagonyawifi.ui.promo.PromoManagementScreen
 import com.cipta.ciptajagonyawifi.ui.splash.SplashScreen
+import com.cipta.ciptajagonyawifi.ui.wifi.WifiDashboardScreen
+import com.cipta.ciptajagonyawifi.ui.wifi.WifiManagementScreen
+import com.cipta.ciptajagonyawifi.ui.wifi.WifiViewModel
 
 
 @Composable
@@ -55,12 +59,17 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
         }
 
         composable("login") {
-            LoginAdminScreen(navController)
+            LoginScreen(navController = navController)
         }
 
         composable("admin_dashboard") {
-            AdminDashboardScreen(navController)
+            AdminDashboardScreen(navController = navController)
         }
+
+        composable("user_home") {
+            UserHomeScreen(navController = navController)
+        }
+
 
         composable("article_dashboard") {
             val articleViewModel: ArticleViewModel = hiltViewModel() // Jika menggunakan Hilt
@@ -138,5 +147,42 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
                 promoId = promoId
             )
         }
+
+        // Wifi Dashboard - Untuk admin melihat daftar paket WiFi
+        composable("wifi_dashboard") {
+            val wifiViewModel: WifiViewModel = viewModel()
+            WifiDashboardScreen(
+                navController = navController,
+                viewModel = wifiViewModel,
+                onAddPackageClick = {
+                    navController.navigate("wifi_management")
+                },
+                onEditPackageClick = { id ->
+                    navController.navigate("wifi_management/$id")
+                }
+            )
+        }
+
+        composable("wifi_management") {
+            val wifiViewModel: WifiViewModel = viewModel()
+            WifiManagementScreen(
+                navController = navController,
+                viewModel = wifiViewModel,
+                packageId = null // Tambah baru
+            )
+        }
+
+        composable("wifi_management/{packageId}") { backStackEntry ->
+            val wifiViewModel: WifiViewModel = viewModel()
+            val packageIdString = backStackEntry.arguments?.getString("packageId")
+            val packageId = packageIdString?.toIntOrNull() // Pastikan konversi ke Int
+            WifiManagementScreen(
+                navController = navController,
+                viewModel = wifiViewModel,
+                packageId = packageId // Edit
+            )
+        }
+
+
     }
 }
