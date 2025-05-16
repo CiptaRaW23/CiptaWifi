@@ -29,9 +29,6 @@ import com.cipta.ciptajagonyawifi.model.WifiPackage
 fun WifiScreen(navController: NavController, viewModel: WifiViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     val wifiPackages by viewModel.wifiPackages.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.loadWifiPackages()
-    }
 
     Box(
         modifier = Modifier.fillMaxSize()

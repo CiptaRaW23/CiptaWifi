@@ -45,6 +45,10 @@ fun AdminDashboardScreen(
                 navController.navigate("article_dashboard")
             }
 
+            DashboardButton("Kelola Paket WiFi") {
+                navController.navigate("wifi_dashboard")
+            }
+
             DashboardButton("Logout", isDanger = true) {
                 FirebaseAuth.getInstance().signOut()
                 navController.navigate("login") {

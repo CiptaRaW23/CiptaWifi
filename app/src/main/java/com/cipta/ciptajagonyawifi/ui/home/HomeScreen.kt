@@ -24,11 +24,20 @@ import com.google.accompanist.pager.*
 import kotlinx.coroutines.delay
 import com.cipta.ciptajagonyawifi.model.Article
 import com.cipta.ciptajagonyawifi.model.Promo
+import androidx.compose.ui.platform.LocalContext
+import com.cipta.ciptajagonyawifi.data.UserPreferences
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+
 
 @Composable
 fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewModel()) {
+    val context = LocalContext.current
+    val userPreferences = remember { UserPreferences(context) }
+    val isLoggedIn by userPreferences.isLoggedIn.collectAsState(initial = false)
     val articles by viewModel.articles.collectAsState()
     val promos by viewModel.promos.collectAsState()
+
 
     Column(
         modifier = Modifier
@@ -48,7 +57,15 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
                 color = Color(0xFF1B5E20)
             )
 
-            IconButton(onClick = { navController.navigate("login") }) {
+            IconButton(
+                onClick = {
+                    if (isLoggedIn) {
+                        navController.navigate("user_home")
+                    } else {
+                        navController.navigate("login")
+                    }
+                }
+            ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_user),
                     contentDescription = "Login Admin",
