@@ -11,11 +11,17 @@ import com.cipta.ciptajagonyawifi.ui.promo.PromoDashboardScreen
 import com.cipta.ciptajagonyawifi.ui.promo.PromoViewModel
 import com.cipta.ciptajagonyawifi.ui.admin.AdminDashboardScreen
 import com.cipta.ciptajagonyawifi.ui.admin.LoginScreen
+import com.cipta.ciptajagonyawifi.ui.admin.RegisterScreen
 import com.cipta.ciptajagonyawifi.ui.admin.UserHomeScreen
 import com.cipta.ciptajagonyawifi.ui.article.ArticleDashboardScreen
 import com.cipta.ciptajagonyawifi.ui.article.ArticleDetailScreen
 import com.cipta.ciptajagonyawifi.ui.article.ArticleManagementScreen
 import com.cipta.ciptajagonyawifi.ui.article.ArticleViewModel
+import com.cipta.ciptajagonyawifi.ui.cctv.CctvDashboardScreen
+import com.cipta.ciptajagonyawifi.ui.cctv.CctvDetailScreen
+import com.cipta.ciptajagonyawifi.ui.cctv.CctvManagementScreen
+import com.cipta.ciptajagonyawifi.ui.cctv.CctvScreen
+import com.cipta.ciptajagonyawifi.ui.cctv.CctvViewModel
 import com.cipta.ciptajagonyawifi.ui.wifi.DetailScreen
 import com.cipta.ciptajagonyawifi.ui.wifi.FormScreen
 import com.cipta.ciptajagonyawifi.ui.home.HomeScreen
@@ -40,6 +46,16 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
             WifiScreen(navController)
         }
 
+        composable("cctvscreen") {
+            CctvScreen(navController)
+        }
+
+        composable("cctvdetail/{id}") { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: 0
+            CctvDetailScreen(packageId = id, navController = navController)
+        }
+
+
         composable("detail/{id}") { backStackEntry ->
             val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: 0
             DetailScreen(packageId = id, navController = navController)
@@ -61,6 +77,11 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
         composable("login") {
             LoginScreen(navController = navController)
         }
+
+        composable("register") {
+            RegisterScreen(navController)
+        }
+
 
         composable("admin_dashboard") {
             AdminDashboardScreen(navController = navController)
@@ -168,7 +189,7 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
             WifiManagementScreen(
                 navController = navController,
                 viewModel = wifiViewModel,
-                packageId = null // Tambah baru
+                packageId = null
             )
         }
 
@@ -179,10 +200,37 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
             WifiManagementScreen(
                 navController = navController,
                 viewModel = wifiViewModel,
-                packageId = packageId // Edit
+                packageId = packageId
+            )
+        }
+
+        composable("cctv_dashboard") {
+            val viewModel: CctvViewModel = hiltViewModel()
+            CctvDashboardScreen(
+                navController = navController,
+                viewModel = viewModel,
+                onAddPackageClick = {
+                    navController.navigate("cctv_management")
+                },
+                onEditPackageClick = { id ->
+                    navController.navigate("cctv_management/$id")
+                }
             )
         }
 
 
+        composable("cctv_management") {
+            val viewModel: CctvViewModel = hiltViewModel()
+            CctvManagementScreen(
+                navController = navController,
+                viewModel = viewModel,
+                packageId = null
+            )
+        }
+
+        composable("cctv_management/{packageId}?") { backStackEntry ->
+            val packageId = backStackEntry.arguments?.getString("packageId")?.toIntOrNull()
+            CctvManagementScreen(navController, packageId)
+        }
     }
 }

@@ -1,12 +1,11 @@
 package com.cipta.ciptajagonyawifi.model
 
-data class WifiPackage(
+data class CctvPackage(
     val id: Int = 0,
     val name: String = "",
-    val speed: String = "",
     val price: String = "",
+    val resolution: String = "",
     val description: String = "",
-    val promo: String = "",
-    val docId: String = "",
+    val features: String = "",
+    val docId: String = ""
 )
-

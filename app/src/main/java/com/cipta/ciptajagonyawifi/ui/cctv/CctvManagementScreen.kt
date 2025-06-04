@@ -1,4 +1,4 @@
-package com.cipta.ciptajagonyawifi.ui.wifi
+package com.cipta.ciptajagonyawifi.ui.cctv
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,38 +9,39 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.cipta.ciptajagonyawifi.model.WifiPackage
+import com.cipta.ciptajagonyawifi.model.CctvPackage
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WifiManagementScreen(
+fun CctvManagementScreen(
     navController: NavController,
     packageId: Int? = null,
-    viewModel: WifiViewModel = viewModel()
+    viewModel: CctvViewModel = viewModel()
 ) {
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
     var id by remember { mutableStateOf(0) }
     var name by remember { mutableStateOf("") }
-    var speed by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
+    var resolution by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var promo by remember { mutableStateOf("") }
+    var features by remember { mutableStateOf("") }
     var docId by remember { mutableStateOf("") }
 
+    fun generateId(): Int = (0..10000).random()
 
     LaunchedEffect(packageId) {
         if (packageId != null) {
-            val pkg = viewModel.wifiPackages.value.find { it.id == packageId }
+            val pkg = viewModel.cctvPackages.value.find { it.id == packageId }
             pkg?.let {
                 id = it.id
                 name = it.name
-                speed = it.speed
                 price = it.price
+                resolution = it.resolution
                 description = it.description
-                promo = it.promo
+                features = it.features
                 docId = it.docId
             }
         }
@@ -50,7 +51,7 @@ fun WifiManagementScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = if (packageId != null) "Edit Paket Wifi" else "Tambah Paket Wifi")
+                    Text(text = if (packageId != null) "Edit Paket CCTV" else "Tambah Paket CCTV")
                 }
             )
         }
@@ -71,17 +72,17 @@ fun WifiManagementScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = speed,
-                onValueChange = { speed = it },
-                label = { Text("Kecepatan") },
+                value = price,
+                onValueChange = { price = it },
+                label = { Text("Harga") },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = price,
-                onValueChange = { price = it },
-                label = { Text("Harga") },
+                value = resolution,
+                onValueChange = { resolution = it },
+                label = { Text("Resolusi CCTV") },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -95,20 +96,28 @@ fun WifiManagementScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = promo,
-                onValueChange = { promo = it },
-                label = { Text("Promo") },
+                value = features,
+                onValueChange = { features = it },
+                label = { Text("Fitur Tambahan") },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {
-                    val wifiPackage = WifiPackage(id, name, speed, price, description, promo, docId)
+                    val cctvPackage = CctvPackage(
+                        id = if (packageId != null) id else generateId(),
+                        name = name,
+                        price = price,
+                        resolution = resolution,
+                        description = description,
+                        features = features,
+                        docId = docId
+                    )
                     if (packageId != null) {
-                        viewModel.updateWifiPackage(wifiPackage)
+                        viewModel.updateCctvPackage(cctvPackage)
                     } else {
-                        viewModel.addWifiPackage(wifiPackage)
+                        viewModel.addCctvPackage(cctvPackage)
                     }
                     navController.popBackStack()
                 },
@@ -117,13 +126,12 @@ fun WifiManagementScreen(
                 Text("Simpan")
             }
 
-
             if (packageId != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(
                     onClick = {
                         scope.launch {
-                            viewModel.deleteWifiPackage(docId)
+                            viewModel.deleteCctvPackage(docId)
                             navController.popBackStack()
                         }
                     },

@@ -11,12 +11,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.cipta.ciptajagonyawifi.ui.profile.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun AdminDashboardScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
     Box(
         modifier = Modifier
@@ -49,8 +52,13 @@ fun AdminDashboardScreen(
                 navController.navigate("wifi_dashboard")
             }
 
+            DashboardButton("Kelola Paket Cctv") {
+                navController.navigate("cctv_dashboard")
+            }
+
             DashboardButton("Logout", isDanger = true) {
                 FirebaseAuth.getInstance().signOut()
+                viewModel.logout(navController)
                 navController.navigate("login") {
                     popUpTo("admin_dashboard") { inclusive = true }
                 }

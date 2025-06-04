@@ -1,7 +1,6 @@
 package com.cipta.ciptajagonyawifi.ui.wifi
 
 import android.graphics.Paint
-import android.graphics.Path
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -9,7 +8,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -25,23 +23,30 @@ import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
+import com.cipta.ciptajagonyawifi.api.RetrofitInstance
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
-fun FormScreen(packageId: Int, navController: NavController = rememberNavController()) {
+fun FormScreen(
+    packageId: Int,
+    navController: NavController = rememberNavController(),
+    viewModel: FormViewModel = hiltViewModel()
+)  {
     var step by remember { mutableStateOf(1) }
 
-    // State untuk tampilkan dialog konfirmasi
     var showConfirmDialog by remember { mutableStateOf(false) }
 
-    // State untuk tampilkan sukses centang
     var showSuccess by remember { mutableStateOf(false) }
 
     Column(
@@ -60,9 +65,9 @@ fun FormScreen(packageId: Int, navController: NavController = rememberNavControl
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 when (step) {
-                    1 -> Step1DataPribadi()
-                    2 -> Step2Identitas()
-                    3 -> Step3LokasiPaket(packageId)
+                    1 -> Step1DataPribadi(viewModel)
+                    2 -> Step2Identitas(viewModel)
+                    3 -> Step3LokasiPaket(packageId, viewModel)
                 }
             }
         }
@@ -103,7 +108,22 @@ fun FormScreen(packageId: Int, navController: NavController = rememberNavControl
             confirmButton = {
                 TextButton(onClick = {
                     showConfirmDialog = false
-                    showSuccess = true
+                    val formData = viewModel.toFormData()
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val response = RetrofitInstance.api.sendForm(formData)
+                            if (response.isSuccessful) {
+                                withContext(Dispatchers.Main) {
+                                    showSuccess = true
+                                }
+                            } else {
+
+                            }
+                        } catch (e: Exception) {
+
+                        }
+                    }
                 }) {
                     Text("Ya")
                 }
@@ -176,25 +196,66 @@ fun StepIndicator(step: Int) {
 }
 
 @Composable
-fun Step1DataPribadi() {
+fun Step1DataPribadi(viewModel: FormViewModel) {
     var nama by remember { mutableStateOf("") }
     var nomorHp by remember { mutableStateOf("") }
     var tempatLahir by remember { mutableStateOf("") }
     var tanggalLahir by remember { mutableStateOf("") }
 
-    OutlinedTextField(value = nama, onValueChange = { nama = it }, label = { Text("Nama Lengkap") }, modifier = Modifier.fillMaxWidth())
+    OutlinedTextField(
+        value = nama,
+        onValueChange = {
+            nama = it
+            viewModel.nama = it
+        },
+        label = { Text("Nama Lengkap") },
+        modifier = Modifier.fillMaxWidth()
+    )
+
     Spacer(Modifier.height(8.dp))
-    OutlinedTextField(value = nomorHp, onValueChange = { nomorHp = it }, label = { Text("Nomor HP") }, modifier = Modifier.fillMaxWidth())
+
+    OutlinedTextField(
+        value = nomorHp,
+        onValueChange = {
+            nomorHp = it
+            viewModel.nomorHp = it
+
+        },
+        label = { Text("Nomor HP") },
+        modifier = Modifier.fillMaxWidth()
+    )
+
     Spacer(Modifier.height(8.dp))
-    GenderDropdown()
+
+    GenderDropdown(viewModel)
+
     Spacer(Modifier.height(8.dp))
-    OutlinedTextField(value = tempatLahir, onValueChange = { tempatLahir = it }, label = { Text("Tempat Lahir") }, modifier = Modifier.fillMaxWidth())
+
+    OutlinedTextField(
+        value = tempatLahir,
+        onValueChange = {
+            tempatLahir = it
+            viewModel.tempatLahir = it
+        },
+        label = { Text("Tempat Lahir") },
+        modifier = Modifier.fillMaxWidth()
+    )
+
     Spacer(Modifier.height(8.dp))
-    OutlinedTextField(value = tanggalLahir, onValueChange = { tanggalLahir = it }, label = { Text("Tanggal Lahir") }, modifier = Modifier.fillMaxWidth())
+
+    OutlinedTextField(
+        value = tanggalLahir,
+        onValueChange = {
+            tanggalLahir = it
+            viewModel.tanggalLahir = it
+        },
+        label = { Text("Tanggal Lahir") },
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @Composable
-fun Step2Identitas() {
+fun Step2Identitas(viewModel: FormViewModel) {
     var nomorIdentitas by remember { mutableStateOf("") }
     var npwp by remember { mutableStateOf("") }
     var alamat by remember { mutableStateOf("") }
@@ -206,6 +267,7 @@ fun Step2Identitas() {
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         selectedImageUri = uri
+        viewModel.fotoIdentitasUri = uri?.toString()
     }
 
     Column {
@@ -213,21 +275,30 @@ fun Step2Identitas() {
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = nomorIdentitas,
-            onValueChange = { nomorIdentitas = it },
+            onValueChange = {
+                nomorIdentitas = it
+                viewModel.nomorIdentitas = it
+            },
             label = { Text("Nomor Identitas") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = npwp,
-            onValueChange = { npwp = it },
+            onValueChange = {
+                npwp = it
+                viewModel.npwp = it
+            },
             label = { Text("NPWP (opsional)") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = alamat,
-            onValueChange = { alamat = it },
+            onValueChange = {
+                alamat = it
+                viewModel.alamat = it
+            },
             label = { Text("Alamat Lengkap") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -255,7 +326,7 @@ fun Step2Identitas() {
 }
 
 @Composable
-fun Step3LokasiPaket(packageId: Int) {
+fun Step3LokasiPaket(packageId: Int, viewModel: FormViewModel) {
     var linkGoogleMaps by remember { mutableStateOf("") }
     var catatan by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
@@ -267,7 +338,10 @@ fun Step3LokasiPaket(packageId: Int) {
     ) {
         OutlinedTextField(
             value = linkGoogleMaps,
-            onValueChange = { linkGoogleMaps = it },
+            onValueChange = {
+                linkGoogleMaps = it
+                viewModel.linkMaps = it
+            },
             label = { Text("Link Lokasi Google Maps") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -280,7 +354,10 @@ fun Step3LokasiPaket(packageId: Int) {
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = catatan,
-            onValueChange = { catatan = it },
+            onValueChange = {
+                catatan = it
+                viewModel.catatan = it
+            },
             label = { Text("Catatan (opsional)") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -294,8 +371,12 @@ fun Step3LokasiPaket(packageId: Int) {
 
 
 @Composable
-fun GenderDropdown() {
-    DropdownComponent(label = "Jenis Kelamin", options = listOf("Laki-laki", "Perempuan"))
+fun GenderDropdown(viewModel: FormViewModel) {
+    DropdownComponent(
+        label = "Jenis Kelamin",
+        options = listOf("Laki-laki", "Perempuan"),
+        onSelectedChange = { viewModel.jenisKelamin = it }
+    )
 }
 
 @Composable
@@ -320,7 +401,12 @@ fun SalesDropdown() {
 }
 
 @Composable
-fun DropdownComponent(label: String, options: List<String>, defaultValue: String = options[0]) {
+fun DropdownComponent(
+    label: String,
+    options: List<String>,
+    defaultValue: String = options[0],
+    onSelectedChange: ((String) -> Unit)? = null
+) {
     var expanded by remember { mutableStateOf(false) }
     var selectedOption by remember { mutableStateOf(defaultValue) }
 
@@ -348,12 +434,14 @@ fun DropdownComponent(label: String, options: List<String>, defaultValue: String
                     onClick = {
                         selectedOption = option
                         expanded = false
+                        onSelectedChange?.invoke(option)
                     }
                 )
             }
         }
     }
 }
+
 
 @Composable
 fun SignaturePad(
@@ -424,4 +512,5 @@ fun SignaturePad(
         Text("Hapus Tanda Tangan", color = Color.White)
     }
 }
+
 

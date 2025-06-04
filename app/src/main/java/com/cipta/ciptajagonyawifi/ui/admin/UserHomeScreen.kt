@@ -7,11 +7,15 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,7 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.cipta.ciptajagonyawifi.ui.profile.ProfileViewModel
-import kotlinx.coroutines.delay
+
 
 @Composable
 fun UserHomeScreen(
@@ -49,7 +53,6 @@ fun UserHomeScreen(
 
     var showSuccessCheck by remember { mutableStateOf(false) }
 
-    // Inisialisasi data hanya sekali
     LaunchedEffect(name, phone, address) {
         fullName = name
         phoneNumber = phone
@@ -62,9 +65,7 @@ fun UserHomeScreen(
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let {
-            selectedImageUri = it
-        }
+        uri?.let { selectedImageUri = it }
     }
 
     Box(
@@ -72,27 +73,39 @@ fun UserHomeScreen(
             .fillMaxSize()
             .background(backgroundGradient)
             .padding(16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 32.dp),
+                .padding(top = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Text(
+                text = "Profil Anda",
+                style = MaterialTheme.typography.headlineSmall,
+                color = Color(0xFF2E7D32)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             // Avatar
             Box(
                 modifier = Modifier
                     .size(110.dp)
                     .clip(CircleShape)
                     .background(Color.White)
-                    .clickable { imagePickerLauncher.launch("image/*") },
+                    .clickable { imagePickerLauncher.launch("image/*") }
+                    .padding(4.dp),
                 contentAlignment = Alignment.Center
             ) {
                 if (selectedImageUri != null) {
                     Image(
                         painter = rememberAsyncImagePainter(selectedImageUri),
                         contentDescription = "Selected Avatar",
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
                     )
                 } else {
                     Icon(
@@ -143,15 +156,35 @@ fun UserHomeScreen(
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp)
-                ) {
-                    InfoItem(label = "Status Paket", value = "Aktif")
-                    InfoItem(label = "Alamat", value = addressText)
+                Column(modifier = Modifier.padding(20.dp)) {
+                    InfoItem("Status Paket", "Aktif")
+                    InfoItem("Alamat", addressText)
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                "Tentang Kami",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color(0xFF1B5E20)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                "Cipta Jagonya WiFi adalah penyedia layanan internet lokal terpercaya dengan berbagai paket yang bisa disesuaikan untuk kebutuhan rumah maupun bisnis.",
+                fontSize = 14.sp,
+                color = Color.DarkGray
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                "FAQ",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color(0xFF1B5E20)
+            )
+            FAQItem("Bagaimana cara berlangganan?", "Isi formulir dan tim kami akan menghubungi Anda.")
+            FAQItem("Berapa kecepatan WiFi?", "Mulai dari 10Mbps hingga 100Mbps, tergantung paket.")
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -171,21 +204,11 @@ fun UserHomeScreen(
             ) {
                 Text("Simpan Profil", color = Color.White)
             }
-            if (showSuccessCheck) {
-                LaunchedEffect(Unit) {
-                    delay(1500)
-                    showSuccessCheck = false
-                    navController.popBackStack()
-                }
-            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Button(
-                onClick = {
-                    // Logout dan arahkan ke login
-                    viewModel.logout(navController)
-                },
+                onClick = { viewModel.logout(navController) },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -193,14 +216,12 @@ fun UserHomeScreen(
                 Text("Logout", color = Color.White)
             }
 
-
+            Spacer(modifier = Modifier.height(32.dp))
         }
 
-        // Centang sukses
         if (showSuccessCheck) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -219,5 +240,37 @@ fun InfoItem(label: String, value: String) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(text = label, fontSize = 14.sp, color = Color.Gray)
         Text(text = value, fontSize = 16.sp, color = Color.Black)
+    }
+}
+
+@Composable
+fun FAQItem(question: String, answer: String) {
+    var expanded by remember { mutableStateOf(false) }
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .clickable { expanded = !expanded }
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = question,
+                    fontSize = 16.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.ExpandMore,
+                    contentDescription = null
+                )
+            }
+            if (expanded) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = answer, fontSize = 14.sp, color = Color.Gray)
+            }
+        }
     }
 }

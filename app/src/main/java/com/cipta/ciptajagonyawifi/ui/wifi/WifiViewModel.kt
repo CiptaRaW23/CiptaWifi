@@ -23,8 +23,6 @@ class WifiViewModel : ViewModel() {
         fetchWifiPackages()
     }
 
-
-
     private fun fetchWifiPackages() {
         wifiCollection
             .orderBy("id", Query.Direction.ASCENDING)
@@ -35,7 +33,7 @@ class WifiViewModel : ViewModel() {
                 }
                 if (snapshot != null && !snapshot.isEmpty) {
                     val list = snapshot.documents.mapNotNull { doc ->
-                        doc.toObject(WifiPackage::class.java)
+                        doc.toObject(WifiPackage::class.java)?.copy(docId = doc.id)
                     }
                     _wifiPackages.value = list
                 } else {
@@ -47,27 +45,35 @@ class WifiViewModel : ViewModel() {
     fun addWifiPackage(wifiPackage: WifiPackage) {
         viewModelScope.launch {
             try {
-                wifiCollection.add(wifiPackage).await()
+                val docRef = wifiCollection.add(wifiPackage).await()
+                val updatedPackage = wifiPackage.copy(docId = docRef.id)
+                docRef.set(updatedPackage).await() // update isi docId dalam dokumen
             } catch (e: Exception) {
                 Log.e("WifiViewModel", "Error adding wifi package", e)
             }
         }
     }
 
-    fun updateWifiPackage(docId: String, wifiPackage: WifiPackage) {
+    fun updateWifiPackage(wifiPackage: WifiPackage) {
         viewModelScope.launch {
             try {
-                wifiCollection.document(docId).set(wifiPackage).await()
+                if (wifiPackage.docId.isNotEmpty()) {
+                    wifiCollection.document(wifiPackage.docId).set(wifiPackage).await()
+                } else {
+                    Log.e("WifiViewModel", "Error: docId is empty for update")
+                }
             } catch (e: Exception) {
                 Log.e("WifiViewModel", "Error updating wifi package", e)
             }
         }
     }
 
-    suspend fun deleteWifiPackage(docId: String) {
+    fun deleteWifiPackage(docId: String) {
         viewModelScope.launch {
             try {
-                wifiCollection.document(docId).delete().await()
+                if (docId.isNotEmpty()) {
+                    wifiCollection.document(docId).delete().await()
+                }
             } catch (e: Exception) {
                 Log.e("WifiViewModel", "Error deleting wifi package", e)
             }

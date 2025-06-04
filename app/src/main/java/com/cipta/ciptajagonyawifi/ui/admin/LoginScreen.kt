@@ -2,21 +2,16 @@ package com.cipta.ciptajagonyawifi.ui.admin
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -45,8 +40,8 @@ fun LoginScreen(
         animateContent = true
     }
 
-    LaunchedEffect(loginSuccess) {
-        if (loginSuccess) {
+    LaunchedEffect(loginSuccess, userRole) {
+        if (loginSuccess && !userRole.isNullOrEmpty()) {
             when (userRole) {
                 "admin" -> navController.navigate("admin_dashboard") {
                     popUpTo("login") { inclusive = true }
@@ -58,11 +53,10 @@ fun LoginScreen(
         }
     }
 
-    // Colors
+    val accentColor = Color(0xFF2E7D32)
     val gradient = Brush.verticalGradient(
         listOf(Color(0xFFDFFFD8), Color(0xFFA7F0BA))
     )
-    val accentColor = Color(0xFF2E7D32)
 
     Box(
         modifier = Modifier
@@ -80,19 +74,9 @@ fun LoginScreen(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Logo header (opsional)
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
-                        .background(accentColor.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    val logo: Painter = painterResource(id = android.R.drawable.ic_lock_idle_lock) // ganti dengan logomu
-                    Image(painter = logo, contentDescription = "Logo", modifier = Modifier.size(40.dp))
-                }
+                Text("Masuk Akun", fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
                     value = email,
@@ -125,7 +109,7 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                if (errorMessage != null) {
+                if (!errorMessage.isNullOrEmpty()) {
                     Text(text = errorMessage, color = Color.Red, fontSize = 13.sp)
                 }
 
@@ -150,6 +134,16 @@ fun LoginScreen(
                     } else {
                         Text("Masuk", color = Color.White, fontWeight = FontWeight.Bold)
                     }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                TextButton(
+                    onClick = {
+                        navController.navigate("register")
+                    }
+                ) {
+                    Text("Belum punya akun? Daftar", color = accentColor)
                 }
             }
         }

@@ -1,4 +1,4 @@
-package com.cipta.ciptajagonyawifi.ui.wifi
+package com.cipta.ciptajagonyawifi.ui.cctv
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,11 +23,11 @@ import androidx.navigation.NavController
 import com.cipta.ciptajagonyawifi.R
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
-import com.cipta.ciptajagonyawifi.model.WifiPackage
+import com.cipta.ciptajagonyawifi.model.CctvPackage
 
 @Composable
-fun WifiScreen(navController: NavController, viewModel: WifiViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
-    val wifiPackages by viewModel.wifiPackages.collectAsState()
+fun CctvScreen(navController: NavController, viewModel: CctvViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+    val cctvPackages by viewModel.cctvPackages.collectAsState()
 
 
     Box(
@@ -47,7 +47,7 @@ fun WifiScreen(navController: NavController, viewModel: WifiViewModel = androidx
                 .padding(16.dp)
         ) {
             Text(
-                text = "Paket WiFi",
+                text = "Paket CCTV",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = Color(0xFFF1F8E9),
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -56,7 +56,7 @@ fun WifiScreen(navController: NavController, viewModel: WifiViewModel = androidx
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(wifiPackages) { pkg ->
+                items(cctvPackages) { pkg ->
                     GlowingPackageCard(pkg = pkg, navController = navController)
                 }
             }
@@ -67,7 +67,7 @@ fun WifiScreen(navController: NavController, viewModel: WifiViewModel = androidx
 
 
 @Composable
-fun GlowingPackageCard(pkg: WifiPackage, navController: NavController) {
+fun GlowingPackageCard(pkg: CctvPackage, navController: NavController) {
     var isPressed by remember { mutableStateOf(false) }
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -81,7 +81,7 @@ fun GlowingPackageCard(pkg: WifiPackage, navController: NavController) {
                 interactionSource = interactionSource,
                 onClick = {
                     isPressed = true
-                    navController.navigate("detail/${pkg.id}")
+                    navController.navigate("cctvdetail/${pkg.id}")
                 }
             ),
         shape = RoundedCornerShape(20.dp),
@@ -103,9 +103,9 @@ fun GlowingPackageCard(pkg: WifiPackage, navController: NavController) {
                 )
                 .padding(16.dp)
         ) {
-            // Gambar Icon WiFi di kanan
+            // Gambar Icon CCTV di kanan
             Image(
-                painter = painterResource(id = R.drawable.ic_wifi),
+                painter = painterResource(id = R.drawable.ic_cctv),
                 contentDescription = "icon",
                 modifier = Modifier
                     .size(80.dp)
@@ -124,7 +124,7 @@ fun GlowingPackageCard(pkg: WifiPackage, navController: NavController) {
                     color = Color.White
                 )
                 Text(
-                    text = pkg.speed,
+                    text = pkg.resolution,
                     fontSize = 14.sp,
                     color = Color.White.copy(alpha = 0.8f)
                 )
@@ -143,9 +143,9 @@ fun GlowingPackageCard(pkg: WifiPackage, navController: NavController) {
 
 @Preview(showBackground = true)
 @Composable
-fun WifiScreenPreview() {
+fun CctvScreenPreview() {
     val navController = rememberNavController()
     MaterialTheme {
-        WifiScreen(navController = navController)
+        CctvScreen(navController = navController)
     }
 }

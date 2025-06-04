@@ -1,4 +1,4 @@
-package com.cipta.ciptajagonyawifi.ui.wifi
+package com.cipta.ciptajagonyawifi.ui.cctv
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,20 +33,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.cipta.ciptajagonyawifi.R
-import com.cipta.ciptajagonyawifi.model.WifiPackage
+import com.cipta.ciptajagonyawifi.model.CctvPackage
 import com.cipta.ciptajagonyawifi.ui.wifi.review.ReviewSection
 import com.google.accompanist.pager.*
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun DetailScreen(
+fun CctvDetailScreen(
     packageId: Int,
     navController: NavController,
-    viewModel: WifiViewModel = androidx.lifecycle.viewmodel.compose.viewModel() // pakai ViewModel yang sudah fetch data
+    viewModel: CctvViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
-    val wifiPackages by viewModel.wifiPackages.collectAsState()
+    val cctvPackages by viewModel.cctvPackages.collectAsState()
 
-    val pkg = wifiPackages.find { it.id == packageId }
+    val pkg = cctvPackages.find { it.id == packageId }
 
     if (pkg == null) {
         Box(
@@ -54,17 +54,16 @@ fun DetailScreen(
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator()
-
         }
         return
     }
 
     val recommendations = remember(packageId) {
-        wifiPackages.filter { it.id != packageId }.shuffled().take(3)
+        cctvPackages.filter { it.id != packageId }.shuffled().take(3)
     }
 
     val images = listOf(
-        R.drawable.background,
+        R.drawable.background, // bisa diganti dengan gambar cctv terkait
         R.drawable.background,
         R.drawable.background
     )
@@ -73,7 +72,7 @@ fun DetailScreen(
     var scale by remember { mutableStateOf(1f) }
     var isZoomed by remember { mutableStateOf(false) }
 
-    val maxScale = 1f
+    val maxScale = 3f
     val minScale = 1f
     val zoomPadding = 16.dp
 
@@ -95,7 +94,7 @@ fun DetailScreen(
                 ) { page ->
                     Image(
                         painter = painterResource(id = images[page]),
-                        contentDescription = "Foto Produk",
+                        contentDescription = "Foto CCTV",
                         modifier = Modifier
                             .fillMaxSize()
                             .pointerInput(Unit) {
@@ -148,7 +147,7 @@ fun DetailScreen(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = pkg.speed,
+                    text = "Resolusi: ${pkg.resolution}",
                     fontSize = 16.sp,
                     color = Color.Gray
                 )
@@ -167,11 +166,11 @@ fun DetailScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Promo:",
+                    text = "Fitur:",
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
-                    text = pkg.promo,
+                    text = pkg.features,
                     fontSize = 16.sp
                 )
 
@@ -181,7 +180,7 @@ fun DetailScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = "Rekomendasi Paket",
+                    text = "Rekomendasi Paket CCTV",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -194,7 +193,7 @@ fun DetailScreen(
                     items(recommendations) { recommendedPkg ->
                         RecommendationCard(
                             recommendedPkg = recommendedPkg,
-                            onClick = { navController.navigate("detail/${recommendedPkg.id}") }
+                            onClick = { navController.navigate("cctvDetail/${recommendedPkg.id}") }
                         )
                     }
                 }
@@ -204,7 +203,7 @@ fun DetailScreen(
         }
 
         Button(
-            onClick = { navController.navigate("form/${pkg.id}") },
+            onClick = { navController.navigate("cctvForm/${pkg.id}") },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -260,15 +259,14 @@ fun DetailScreen(
     }
 }
 
-
 @Composable
-fun RecommendationCard(recommendedPkg: WifiPackage, onClick: () -> Unit) {
+fun RecommendationCard(recommendedPkg: CctvPackage, onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val gradientColors = listOf(
-        if (isPressed) Color(0xFF81C784) else Color(0xFF1B5E20), // Dark green when normal, medium green when pressed
-        Color(0xFF81C784) // Medium green always
+        if (isPressed) Color(0xFF81C784) else Color(0xFF1B5E20),
+        Color(0xFF81C784)
     )
 
     Box(
@@ -277,7 +275,7 @@ fun RecommendationCard(recommendedPkg: WifiPackage, onClick: () -> Unit) {
             .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = interactionSource,
-                indication = null, // Disable default ripple
+                indication = null,
                 onClick = onClick
             )
             .background(
@@ -306,7 +304,7 @@ fun RecommendationCard(recommendedPkg: WifiPackage, onClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = recommendedPkg.speed,
+                text = "Resolusi: ${recommendedPkg.resolution}",
                 fontSize = 12.sp,
                 color = Color.White.copy(alpha = 0.9f)
             )

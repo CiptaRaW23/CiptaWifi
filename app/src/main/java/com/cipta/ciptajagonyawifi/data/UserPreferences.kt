@@ -18,7 +18,6 @@ class UserPreferences(private val context: Context) {
         val ADDRESS_KEY = stringPreferencesKey("address")
         val AVATAR_URI_KEY = stringPreferencesKey("avatar_uri")
         val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
-
     }
 
     val name: Flow<String> = context.dataStore.data.map { it[NAME_KEY] ?: "" }
@@ -26,6 +25,7 @@ class UserPreferences(private val context: Context) {
     val address: Flow<String> = context.dataStore.data.map { it[ADDRESS_KEY] ?: "" }
     val avatarUri: Flow<String> = context.dataStore.data.map { it[AVATAR_URI_KEY] ?: "" }
     val isLoggedIn: Flow<Boolean> = context.dataStore.data.map { it[IS_LOGGED_IN] ?: false }
+
 
     suspend fun saveProfile(name: String, phone: String, address: String, avatarUri: String) {
         context.dataStore.edit { prefs ->
@@ -42,9 +42,9 @@ class UserPreferences(private val context: Context) {
         }
     }
 
-    suspend fun logout() {
-        context.dataStore.edit {
-            it.clear()
+    suspend fun clearUserSession() {
+        context.dataStore.edit { prefs ->
+            prefs.clear()
         }
     }
 }

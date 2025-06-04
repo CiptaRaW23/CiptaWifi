@@ -4,11 +4,14 @@ package com.cipta.ciptajagonyawifi.ui.home
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -26,8 +29,6 @@ import com.cipta.ciptajagonyawifi.model.Article
 import com.cipta.ciptajagonyawifi.model.Promo
 import androidx.compose.ui.platform.LocalContext
 import com.cipta.ciptajagonyawifi.data.UserPreferences
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 
 
 @Composable
@@ -42,7 +43,15 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5)) // Latar belakang mint muda
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF2E7D32),
+                        Color(0xFF81C784)
+                    )
+                )
+            )
+            .verticalScroll(rememberScrollState())
     ) {
         Row(
             modifier = Modifier
@@ -54,7 +63,7 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
             Text(
                 text = "Beranda",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                color = Color(0xFF1B5E20)
+                color = Color(0xFFF1F8E9)
             )
 
             IconButton(
@@ -69,7 +78,7 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
                 Icon(
                     painter = painterResource(id = R.drawable.ic_user),
                     contentDescription = "Login Admin",
-                    tint = Color(0xFF2E7D32),
+                    tint = Color(0xFFF1F8E9),
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -79,17 +88,24 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        Text(
+            text = "Menu",
+            style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFFF1F8E9)),
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
         MenuGrid(navController = navController)
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
-            text = "Seputar Edukasi",
-            style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFF388E3C)),
-            modifier = Modifier.padding(horizontal = 16.dp)
+        NewsSection(
+            navController = navController,
+            title = "Berita Terbaru",
+            articles = articles
         )
 
-        NewsSection(navController = navController, article = articles)
+        Spacer(modifier = Modifier.height(24.dp))
+
     }
 }
 
@@ -141,7 +157,7 @@ fun PromoSlider(promos: List<Promo>) {
 fun MenuGrid(navController: NavController) {
     val menuItems = listOf(
         Pair("WiFi", R.drawable.ic_wifi2),
-        Pair("CCTV", R.drawable.ic_wifi2),
+        Pair("CCTV", R.drawable.ic_cctv),
         Pair("TV", R.drawable.ic_wifi2),
         Pair("Web", R.drawable.ic_wifi2)
     )
@@ -154,8 +170,9 @@ fun MenuGrid(navController: NavController) {
             ) {
                 i.forEach { (title, icon) ->
                     MenuItem(title = title, icon = icon) {
-                        if (title == "WiFi") {
-                            navController.navigate("wifiscreen")
+                        when (title) {
+                            "WiFi" -> navController.navigate("wifiscreen")
+                            "CCTV" -> navController.navigate("cctvscreen")
                         }
                     }
                 }
@@ -171,68 +188,62 @@ fun MenuItem(title: String, icon: Int, onClick: () -> Unit) {
         modifier = Modifier
             .width(170.dp)
             .clickable { onClick() }
-            .background(Color(0xFFE8F5E9), RoundedCornerShape(12.dp))
+            .background(Color(0xFFF1F8E9), RoundedCornerShape(12.dp))
             .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
             painter = painterResource(id = icon),
             contentDescription = title,
-            tint = Color(0xFF2E7D32),
+            tint = Color(0xFF537d5d),
             modifier = Modifier.size(40.dp)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = title,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF1B5E20)
+            color = Color(0xFF446644)
         )
     }
 }
 
+
 @Composable
-fun NewsSection(navController: NavController, article: List<Article>) {
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth()
-            .heightIn(min = 100.dp, max = 300.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-        article.forEach { article ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .clickable {
-                        navController.navigate("article/${article.id}")
-                    },
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)) // Card hijau lembut
-            ) {
-                Row {
+fun NewsSection(navController: NavController, title: String, articles: List<Article>) {
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFFF1F8E9)),
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(articles) { article ->
+                Card(
+                    modifier = Modifier
+                        .width(176.dp)
+                        .height(100.dp)
+                        .clickable {
+                            navController.navigate("article/${article.id}")
+                        },
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
                     AsyncImage(
                         model = article.imageUrl,
                         contentDescription = null,
-                        modifier = Modifier
-                            .size(64.dp)
-                            .padding(8.dp)
-                            .clip(RoundedCornerShape(8.dp)),
-                        contentScale = ContentScale.Crop
-                    )
-                    Text(
-                        text = article.title,
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .weight(1f),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color(0xFF33691E) // Judul artikel
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
             }
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
