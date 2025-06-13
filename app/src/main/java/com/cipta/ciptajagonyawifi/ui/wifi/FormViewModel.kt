@@ -4,32 +4,35 @@ import androidx.lifecycle.ViewModel
 import com.cipta.ciptajagonyawifi.model.FormData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 @HiltViewModel
 class FormViewModel @Inject constructor() : ViewModel() {
 
     // Step 1
-    var nama: String = ""
-    var nomorHp: String = ""
-    var tempatLahir: String = ""
-    var tanggalLahir: String = ""
-    var jenisKelamin: String = ""
+    var nama: String by mutableStateOf("")
+    var nomorHp: String by mutableStateOf("")
+    var tempatLahir: String by mutableStateOf("")
+    var tanggalLahir: String by mutableStateOf("")
+    var jenisKelamin: String by mutableStateOf("Laki-laki")
 
     // Step 2
-    var jenisIdentitas: String = ""
-    var nomorIdentitas: String = ""
-    var npwp: String = ""
-    var alamat: String = ""
-    var fotoIdentitasUri: String? = null  // URI disimpan sebagai string jika perlu dikirim
+    var jenisIdentitas: String by mutableStateOf("KTP")
+    var nomorIdentitas: String by mutableStateOf("")
+    var npwp: String by mutableStateOf("")
+    var alamat: String by mutableStateOf("")
+    var fotoIdentitasUri: String? by mutableStateOf(null)
 
     // Step 3
-    var linkMaps: String = ""
-    var jenisPelanggan: String = ""
-    var paketPilihan: String = ""
-    var sales: String = ""
-    var catatan: String = ""
+    var linkMaps: String by mutableStateOf("")
+    var jenisPelanggan: String by mutableStateOf("Pribadi")
+    var paketPilihan: String by mutableStateOf("")
+    var sales: String by mutableStateOf("Admin")
+    var catatan: String by mutableStateOf("")
 
-    // Fungsi untuk mengonversi ke model FormData
+
     fun toFormData(): FormData {
         return FormData(
             nama = nama,

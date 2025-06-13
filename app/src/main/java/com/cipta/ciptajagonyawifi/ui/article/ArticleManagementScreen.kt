@@ -2,9 +2,13 @@ package com.cipta.ciptajagonyawifi.ui.article
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cipta.ciptajagonyawifi.model.Article
 import kotlinx.coroutines.launch
@@ -13,7 +17,7 @@ import kotlinx.coroutines.launch
 fun ArticleManagementScreen(
     navController: NavController,
     articleId: String? = null,
-    viewModel: ArticleViewModel = androidx.lifecycle.viewmodel.compose.viewModel() // Ubah jadi 'viewModel' sesuai dengan yang dikirim
+    viewModel: ArticleViewModel = hiltViewModel()
 ) {
     val scope = rememberCoroutineScope()
 
@@ -23,7 +27,7 @@ fun ArticleManagementScreen(
 
     LaunchedEffect(articleId) {
         if (!articleId.isNullOrEmpty()) {
-            val article = viewModel.getArticleById(articleId) // Ganti articleViewModel menjadi viewModel
+            val article = viewModel.getArticleById(articleId)
             article?.let {
                 title = it.title
                 content = it.content
@@ -34,7 +38,22 @@ fun ArticleManagementScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(if (articleId != null) "Edit Artikel" else "Tambah Artikel") })
+            TopAppBar(
+                title = {
+                    Text(if (articleId != null) "Edit Artikel" else "Tambah Artikel")
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Kembali",
+                            tint = Color.White
+                        )
+                    }
+                },
+                backgroundColor = Color(0xFF1B5E20),
+                contentColor = Color.White
+            )
         }
     ) { padding ->
         Column(
@@ -68,15 +87,19 @@ fun ArticleManagementScreen(
             Button(
                 onClick = {
                     if (articleId != null) {
-                        viewModel.updateArticle(articleId, title, content, imageUrl) // Ganti articleViewModel menjadi viewModel
+                        viewModel.updateArticle(articleId, title, content, imageUrl)
                     } else {
                         viewModel.addArticle(
                             Article(title = title, content = content, imageUrl = imageUrl)
-                        ) // Ganti articleViewModel menjadi viewModel
+                        )
                     }
                     navController.popBackStack()
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color(0xFF1B5E20),
+                    contentColor = Color.White
+                )
             ) {
                 Text("Simpan")
             }
@@ -86,12 +109,14 @@ fun ArticleManagementScreen(
                 OutlinedButton(
                     onClick = {
                         scope.launch {
-                            viewModel.deleteArticle(articleId) // Ganti articleViewModel menjadi viewModel
+                            viewModel.deleteArticle(articleId)
                             navController.popBackStack()
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colors.error)
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colors.error
+                    )
                 ) {
                     Text("Hapus")
                 }

@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,10 +27,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.cipta.ciptajagonyawifi.model.CctvPackage
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CctvScreen(navController: NavController, viewModel: CctvViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     val cctvPackages by viewModel.cctvPackages.collectAsState()
-
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -40,24 +42,61 @@ fun CctvScreen(navController: NavController, viewModel: CctvViewModel = androidx
             modifier = Modifier.fillMaxSize()
         )
 
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Transparent)
-                .padding(16.dp)
-        ) {
-            Text(
-                text = "Paket CCTV",
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                color = Color(0xFFF1F8E9),
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.6f),
+                            Color.Black.copy(alpha = 0.3f),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Paket CCTV",
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                            color = Color.White
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Kembali",
+                                tint = Color.White
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        titleContentColor = Color.White
+                    )
+                )
+            },
+            containerColor = Color.Transparent,
+            modifier = Modifier.fillMaxSize()
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp)
             ) {
-                items(cctvPackages) { pkg ->
-                    GlowingPackageCard(pkg = pkg, navController = navController)
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
+                    items(cctvPackages) { pkg ->
+                        GlowingPackageCard(pkg = pkg, navController = navController)
+                    }
                 }
             }
         }
@@ -77,7 +116,7 @@ fun GlowingPackageCard(pkg: CctvPackage, navController: NavController) {
             .fillMaxWidth()
             .padding(bottom = 16.dp)
             .clickable(
-                indication = null,  // Menghilangkan efek ripple default
+                indication = null,
                 interactionSource = interactionSource,
                 onClick = {
                     isPressed = true
@@ -103,7 +142,7 @@ fun GlowingPackageCard(pkg: CctvPackage, navController: NavController) {
                 )
                 .padding(16.dp)
         ) {
-            // Gambar Icon CCTV di kanan
+
             Image(
                 painter = painterResource(id = R.drawable.ic_cctv),
                 contentDescription = "icon",
@@ -112,7 +151,7 @@ fun GlowingPackageCard(pkg: CctvPackage, navController: NavController) {
                     .align(Alignment.CenterEnd)
             )
 
-            // Kolom teks di kiri
+
             Column(
                 modifier = Modifier
                     .align(Alignment.CenterStart)

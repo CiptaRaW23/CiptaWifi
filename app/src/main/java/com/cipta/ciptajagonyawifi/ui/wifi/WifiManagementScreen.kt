@@ -3,16 +3,22 @@ package com.cipta.ciptajagonyawifi.ui.wifi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.cipta.ciptajagonyawifi.model.WifiPackage
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun WifiManagementScreen(
     navController: NavController,
@@ -29,7 +35,9 @@ fun WifiManagementScreen(
     var description by remember { mutableStateOf("") }
     var promo by remember { mutableStateOf("") }
     var docId by remember { mutableStateOf("") }
+    val imageUrls = remember { mutableStateListOf<String>() }
 
+    fun generateId(): Int = (0..10000).random()
 
     LaunchedEffect(packageId) {
         if (packageId != null) {
@@ -42,15 +50,43 @@ fun WifiManagementScreen(
                 description = it.description
                 promo = it.promo
                 docId = it.docId
+                imageUrls.clear()
+                imageUrls.addAll(it.imageUrls)
+                if (imageUrls.isEmpty()) {
+                    imageUrls.add("")
+                }
             }
+        } else {
+            id = generateId()
+            name = ""
+            speed = ""
+            price = ""
+            description = ""
+            promo = ""
+            docId = ""
+            imageUrls.clear()
+            imageUrls.add("")
         }
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            androidx.compose.material.TopAppBar(
                 title = {
-                    Text(text = if (packageId != null) "Edit Paket Wifi" else "Tambah Paket Wifi")
+                    Text(
+                        text = if (packageId != null) "Edit Paket WiFi" else "Tambah Paket WiFi",
+                        color = Color.White
+                    )
+                },
+                backgroundColor = Color(0xFF1B5E20),
+                navigationIcon = {
+                    androidx.compose.material.IconButton(onClick = { navController.popBackStack() }) {
+                        androidx.compose.material.Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
                 }
             )
         }
@@ -101,6 +137,42 @@ fun WifiManagementScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
+
+            Text(text = "URL Gambar (Satu per baris):", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                imageUrls.forEachIndexed { index, url ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = url,
+                            onValueChange = { newValue -> imageUrls[index] = newValue },
+                            label = { Text("URL Gambar ${index + 1}") },
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        if (imageUrls.size > 1) {
+                            IconButton(onClick = { imageUrls.removeAt(index) }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Hapus URL")
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                Button(
+                    onClick = { imageUrls.add("") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Tambah URL Gambar")
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Tambah Gambar")
+                }
+            }
 
             Button(
                 onClick = {

@@ -27,11 +27,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.cipta.ciptajagonyawifi.R
 import com.cipta.ciptajagonyawifi.model.CctvPackage
 import com.cipta.ciptajagonyawifi.ui.wifi.review.ReviewSection
@@ -50,7 +53,9 @@ fun CctvDetailScreen(
 
     if (pkg == null) {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF1B5E20)), // Background saat loading
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator()
@@ -62,11 +67,18 @@ fun CctvDetailScreen(
         cctvPackages.filter { it.id != packageId }.shuffled().take(3)
     }
 
-    val images = listOf(
-        R.drawable.background, // bisa diganti dengan gambar cctv terkait
-        R.drawable.background,
-        R.drawable.background
-    )
+    val images = pkg.imageUrls
+    if (images.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp)
+                .background(Color.LightGray),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Tidak ada gambar untuk paket ini", color = Color.Gray)
+        }
+    }
 
     val pagerState = rememberPagerState()
     var scale by remember { mutableStateOf(1f) }
@@ -92,9 +104,14 @@ fun CctvDetailScreen(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
-                    Image(
-                        painter = painterResource(id = images[page]),
-                        contentDescription = "Foto CCTV",
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(images[page])
+                            .crossfade(true)
+                            .error(R.drawable.ic_image_error)
+                            .placeholder(R.drawable.ic_image_placeholder)
+                            .build(),
+                        contentDescription = "Foto CCTV ${pkg.name} ${page + 1}",
                         modifier = Modifier
                             .fillMaxSize()
                             .pointerInput(Unit) {
@@ -107,6 +124,7 @@ fun CctvDetailScreen(
                             },
                         contentScale = ContentScale.Crop
                     )
+
                 }
 
                 IconButton(
@@ -203,7 +221,7 @@ fun CctvDetailScreen(
         }
 
         Button(
-            onClick = { navController.navigate("cctvForm/${pkg.id}") },
+            onClick = { navController.navigate("form/cctv/${pkg.id}") },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -227,8 +245,8 @@ fun CctvDetailScreen(
                         .padding(zoomPadding)
                         .align(Alignment.Center)
                 ) {
-                    Image(
-                        painter = painterResource(id = images[pagerState.currentPage]),
+                    AsyncImage(
+                        model = images[pagerState.currentPage],
                         contentDescription = "Zoomed Image",
                         contentScale = ContentScale.Inside,
                         modifier = Modifier

@@ -73,7 +73,7 @@ fun DashboardButton(
     isDanger: Boolean = false,
     onClick: () -> Unit
 ) {
-    val backgroundColor = if (isDanger) Color.Red else Color(0xFF1976D2) // biru
+    val backgroundColor = if (isDanger) Color.Red else Color(0xFF4CAF50)
     val textColor = if (isDanger) Color.White else Color.White
 
     Button(

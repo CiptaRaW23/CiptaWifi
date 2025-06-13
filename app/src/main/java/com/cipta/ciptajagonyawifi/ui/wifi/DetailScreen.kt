@@ -27,11 +27,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.cipta.ciptajagonyawifi.R
 import com.cipta.ciptajagonyawifi.model.WifiPackage
 import com.cipta.ciptajagonyawifi.ui.wifi.review.ReviewSection
@@ -42,7 +45,7 @@ import com.google.accompanist.pager.*
 fun DetailScreen(
     packageId: Int,
     navController: NavController,
-    viewModel: WifiViewModel = androidx.lifecycle.viewmodel.compose.viewModel() // pakai ViewModel yang sudah fetch data
+    viewModel: WifiViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     val wifiPackages by viewModel.wifiPackages.collectAsState()
 
@@ -63,11 +66,18 @@ fun DetailScreen(
         wifiPackages.filter { it.id != packageId }.shuffled().take(3)
     }
 
-    val images = listOf(
-        R.drawable.background,
-        R.drawable.background,
-        R.drawable.background
-    )
+    val images = pkg.imageUrls
+    if (images.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp)
+                .background(Color.LightGray),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Tidak ada gambar untuk paket ini", color = Color.Gray)
+        }
+    }
 
     val pagerState = rememberPagerState()
     var scale by remember { mutableStateOf(1f) }
@@ -93,9 +103,14 @@ fun DetailScreen(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize()
                 ) { page ->
-                    Image(
-                        painter = painterResource(id = images[page]),
-                        contentDescription = "Foto Produk",
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(images[page])
+                            .crossfade(true)
+                            .error(R.drawable.ic_image_error)
+                            .placeholder(R.drawable.ic_image_placeholder)
+                            .build(),
+                        contentDescription = "Foto Produk ${pkg.name} ${page + 1}",
                         modifier = Modifier
                             .fillMaxSize()
                             .pointerInput(Unit) {
@@ -204,7 +219,7 @@ fun DetailScreen(
         }
 
         Button(
-            onClick = { navController.navigate("form/${pkg.id}") },
+            onClick = { navController.navigate("form/wifi/${pkg.id}") },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -228,8 +243,8 @@ fun DetailScreen(
                         .padding(zoomPadding)
                         .align(Alignment.Center)
                 ) {
-                    Image(
-                        painter = painterResource(id = images[pagerState.currentPage]),
+                    AsyncImage(
+                        model = images[pagerState.currentPage],
                         contentDescription = "Zoomed Image",
                         contentScale = ContentScale.Inside,
                         modifier = Modifier
@@ -267,8 +282,8 @@ fun RecommendationCard(recommendedPkg: WifiPackage, onClick: () -> Unit) {
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val gradientColors = listOf(
-        if (isPressed) Color(0xFF81C784) else Color(0xFF1B5E20), // Dark green when normal, medium green when pressed
-        Color(0xFF81C784) // Medium green always
+        if (isPressed) Color(0xFF81C784) else Color(0xFF1B5E20),
+        Color(0xFF81C784)
     )
 
     Box(
@@ -277,7 +292,7 @@ fun RecommendationCard(recommendedPkg: WifiPackage, onClick: () -> Unit) {
             .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = interactionSource,
-                indication = null, // Disable default ripple
+                indication = null,
                 onClick = onClick
             )
             .background(
@@ -298,6 +313,19 @@ fun RecommendationCard(recommendedPkg: WifiPackage, onClick: () -> Unit) {
                 .padding(12.dp)
                 .fillMaxWidth()
         ) {
+            if (recommendedPkg.imageUrls.isNotEmpty()) {
+                AsyncImage(
+                    model = recommendedPkg.imageUrls.first(),
+                    contentDescription = recommendedPkg.name,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             Text(
                 text = recommendedPkg.name,
                 style = MaterialTheme.typography.titleMedium,

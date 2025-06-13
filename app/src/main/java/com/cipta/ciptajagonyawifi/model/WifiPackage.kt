@@ -8,5 +8,6 @@ data class WifiPackage(
     val description: String = "",
     val promo: String = "",
     val docId: String = "",
+    val imageUrls: List<String> = emptyList()
 )
 

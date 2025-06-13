@@ -5,8 +5,10 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.cipta.ciptajagonyawifi.ui.promo.PromoDashboardScreen
 import com.cipta.ciptajagonyawifi.ui.promo.PromoViewModel
 import com.cipta.ciptajagonyawifi.ui.admin.AdminDashboardScreen
@@ -25,6 +27,7 @@ import com.cipta.ciptajagonyawifi.ui.cctv.CctvViewModel
 import com.cipta.ciptajagonyawifi.ui.wifi.DetailScreen
 import com.cipta.ciptajagonyawifi.ui.wifi.FormScreen
 import com.cipta.ciptajagonyawifi.ui.home.HomeScreen
+import com.cipta.ciptajagonyawifi.ui.promo.PromoDetailScreen
 import com.cipta.ciptajagonyawifi.ui.wifi.WifiScreen
 import com.cipta.ciptajagonyawifi.ui.promo.PromoManagementScreen
 import com.cipta.ciptajagonyawifi.ui.splash.SplashScreen
@@ -61,16 +64,27 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
             DetailScreen(packageId = id, navController = navController)
         }
 
-        composable("form/{id}") { backStackEntry ->
-            val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: 0
-            FormScreen(packageId = id, navController = navController)
+        composable(
+            "form/{type}/{packageId}",
+            arguments = listOf(
+                navArgument("type") { type = NavType.StringType },
+                navArgument("packageId") {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            )
+        ) { backStackEntry ->
+            val type = backStackEntry.arguments?.getString("type")
+            val packageId = backStackEntry.arguments?.getString("packageId")
+
+            FormScreen(packageId = packageId, type = type, navController = navController)
         }
 
 
         composable("article/{articleId}") { backStackEntry ->
             val articleId = backStackEntry.arguments?.getString("articleId")
             articleId?.let {
-                ArticleDetailScreen(articleId = it, navController = navController) // Pass navController explicitly
+                ArticleDetailScreen(articleId = it, navController = navController)
             }
         }
 
@@ -169,6 +183,17 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
             )
         }
 
+        composable("promo_detail/{promoId}", // Rute ini yang akan dituju saat promo diklik
+            arguments = listOf(
+                navArgument("promoId") { type = NavType.StringType } // Asumsi ID promo adalah String
+            )
+        ) { backStackEntry ->
+            val promoId = backStackEntry.arguments?.getString("promoId")
+            promoId?.let {
+                PromoDetailScreen(promoId = it, navController = navController) // Panggil PromoDetailScreen Anda
+            }
+        }
+
         // Wifi Dashboard - Untuk admin melihat daftar paket WiFi
         composable("wifi_dashboard") {
             val wifiViewModel: WifiViewModel = viewModel()
@@ -196,7 +221,7 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
         composable("wifi_management/{packageId}") { backStackEntry ->
             val wifiViewModel: WifiViewModel = viewModel()
             val packageIdString = backStackEntry.arguments?.getString("packageId")
-            val packageId = packageIdString?.toIntOrNull() // Pastikan konversi ke Int
+            val packageId = packageIdString?.toIntOrNull()
             WifiManagementScreen(
                 navController = navController,
                 viewModel = wifiViewModel,

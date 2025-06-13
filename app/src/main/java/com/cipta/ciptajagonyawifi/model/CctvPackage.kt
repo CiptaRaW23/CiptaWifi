@@ -7,5 +7,6 @@ data class CctvPackage(
     val resolution: String = "",
     val description: String = "",
     val features: String = "",
-    val docId: String = ""
+    val docId: String = "",
+    val imageUrls: List<String> = emptyList()
 )

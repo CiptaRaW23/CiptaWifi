@@ -28,6 +28,8 @@ import kotlinx.coroutines.delay
 import com.cipta.ciptajagonyawifi.model.Article
 import com.cipta.ciptajagonyawifi.model.Promo
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextOverflow
 import com.cipta.ciptajagonyawifi.data.UserPreferences
 
 
@@ -46,8 +48,8 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF2E7D32),
-                        Color(0xFF81C784)
+                        Color(0xFF1B5E20),
+                        Color(0xFFFFEE58)
                     )
                 )
             )
@@ -60,11 +62,14 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Beranda",
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                color = Color(0xFFF1F8E9)
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = "Beranda",
+                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                    color = Color(0xFFF1F8E9)
+                )
+            }
 
             IconButton(
                 onClick = {
@@ -84,15 +89,17 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
             }
         }
 
-        PromoSlider(promos = promos)
+        PromoSlider(promos = promos, navController = navController)
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Menu",
+            text = "Layanan Kami",
             style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFFF1F8E9)),
             modifier = Modifier.padding(horizontal = 16.dp)
         )
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         MenuGrid(navController = navController)
 
@@ -110,10 +117,11 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
 }
 
 @Composable
-fun PromoSlider(promos: List<Promo>) {
+fun PromoSlider(promos: List<Promo>, navController: NavController) {
     if (promos.isEmpty()) return
 
     val pagerState = rememberPagerState(initialPage = 0)
+    val density = LocalDensity.current
 
     LaunchedEffect(pagerState) {
         while (true) {
@@ -129,18 +137,52 @@ fun PromoSlider(promos: List<Promo>) {
             state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(180.dp)
+                .height(200.dp)
         ) { page ->
-            AsyncImage(
-                model = promos[page].imageUrl,
-                contentDescription = "Promo ${promos[page].id}",
-                contentScale = ContentScale.Crop,
+            Box(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .fillMaxSize()
                     .aspectRatio(16f / 9f)
-            )
+                    .clickable { navController.navigate("promo_detail/${promos[page].id}") }
+            ) {
+                AsyncImage(
+                    model = promos[page].imageUrl,
+                    contentDescription = "Promo ${promos[page].id}",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f)),
+                                startY = 0.5f * density.density,
+                                endY = density.density
+                            )
+                        ),
+                    contentAlignment = Alignment.BottomStart
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = promos[page].title,
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                            color = Color.White
+                        )
+                        if (promos[page].description.isNotBlank()) {
+                            Text(
+                                text = promos[page].description.take(50) + "...",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White.copy(alpha = 0.8f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+            }
         }
 
         HorizontalPagerIndicator(
@@ -156,24 +198,28 @@ fun PromoSlider(promos: List<Promo>) {
 @Composable
 fun MenuGrid(navController: NavController) {
     val menuItems = listOf(
-        Pair("WiFi", R.drawable.ic_wifi2),
-        Pair("CCTV", R.drawable.ic_cctv),
-        Pair("TV", R.drawable.ic_wifi2),
-        Pair("Web", R.drawable.ic_wifi2)
+        Triple("WiFi", R.drawable.ic_wifi2, "wifiscreen"),
+        Triple("CCTV", R.drawable.ic_cctv, "cctvscreen"),
+        Triple("TV", R.drawable.background, "tvscreen"),
+        Triple("Web", R.drawable.background, "webscreen")
     )
 
-    Column(modifier = Modifier.padding(horizontal = 5.dp)) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         for (i in menuItems.chunked(2)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Top
             ) {
-                i.forEach { (title, icon) ->
-                    MenuItem(title = title, icon = icon) {
-                        when (title) {
-                            "WiFi" -> navController.navigate("wifiscreen")
-                            "CCTV" -> navController.navigate("cctvscreen")
-                        }
+                i.forEach { (title, icon, route) ->
+                    MenuItem(
+                        title = title,
+                        icon = icon,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        navController.navigate(route)
                     }
                 }
             }
@@ -183,27 +229,39 @@ fun MenuGrid(navController: NavController) {
 }
 
 @Composable
-fun MenuItem(title: String, icon: Int, onClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .width(170.dp)
-            .clickable { onClick() }
-            .background(Color(0xFFF1F8E9), RoundedCornerShape(12.dp))
-            .padding(10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+fun MenuItem(
+    title: String,
+    icon: Int,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = title,
-            tint = Color(0xFF537d5d),
-            modifier = Modifier.size(40.dp)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF446644)
-        )
+        Column(
+            modifier = Modifier
+                .padding(vertical = 16.dp, horizontal = 12.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = title,
+                tint = Color(0xFF1B5E20),
+                modifier = Modifier.size(50.dp)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = Color(0xFF1B5E20)
+            )
+        }
     }
 }
 
@@ -216,6 +274,9 @@ fun NewsSection(navController: NavController, title: String, articles: List<Arti
             style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFFF1F8E9)),
             modifier = Modifier.padding(horizontal = 16.dp)
         )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -224,20 +285,32 @@ fun NewsSection(navController: NavController, title: String, articles: List<Arti
                 Card(
                     modifier = Modifier
                         .width(176.dp)
-                        .height(100.dp)
-                        .clickable {
-                            navController.navigate("article/${article.id}")
-                        },
+                        .clickable { navController.navigate("article/${article.id}") },
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
-                    AsyncImage(
-                        model = article.imageUrl,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    Column {
+                        AsyncImage(
+                            model = article.imageUrl,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp)
+                                .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                        )
+                        Column(modifier = Modifier.padding(8.dp)) {
+                            Text(
+                                text = article.title,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
+                    }
                 }
             }
         }

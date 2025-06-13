@@ -3,9 +3,15 @@ package com.cipta.ciptajagonyawifi.ui.cctv
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -29,6 +35,7 @@ fun CctvManagementScreen(
     var description by remember { mutableStateOf("") }
     var features by remember { mutableStateOf("") }
     var docId by remember { mutableStateOf("") }
+    val imageUrls = remember { mutableStateListOf<String>() }
 
     fun generateId(): Int = (0..10000).random()
 
@@ -43,15 +50,44 @@ fun CctvManagementScreen(
                 description = it.description
                 features = it.features
                 docId = it.docId
+                imageUrls.clear()
+                imageUrls.addAll(it.imageUrls)
+                if (imageUrls.isEmpty()) {
+                    imageUrls.add("")
+                }
             }
+        } else {
+
+            id = generateId()
+            name = ""
+            price = ""
+            resolution = ""
+            description = ""
+            features = ""
+            docId = ""
+            imageUrls.clear()
+            imageUrls.add("")
         }
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            androidx.compose.material.TopAppBar(
                 title = {
-                    Text(text = if (packageId != null) "Edit Paket CCTV" else "Tambah Paket CCTV")
+                    Text(
+                        text = if (packageId != null) "Edit Paket CCTV" else "Tambah Paket CCTV",
+                        color = Color.White
+                    )
+                },
+                backgroundColor = Color(0xFF1B5E20),
+                navigationIcon = {
+                    androidx.compose.material.IconButton(onClick = { navController.popBackStack() }) {
+                        androidx.compose.material.Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
                 }
             )
         }
@@ -101,6 +137,44 @@ fun CctvManagementScreen(
                 label = { Text("Fitur Tambahan") },
                 modifier = Modifier.fillMaxWidth()
             )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(text = "URL Gambar (Satu per baris):", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                imageUrls.forEachIndexed { index, url ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = url,
+                            onValueChange = { newValue -> imageUrls[index] = newValue },
+                            label = { Text("URL Gambar ${index + 1}") },
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        if (imageUrls.size > 1) {
+                            IconButton(onClick = { imageUrls.removeAt(index) }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Hapus URL")
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                Button(
+                    onClick = { imageUrls.add("") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Tambah URL Gambar")
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Tambah Gambar")
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
